@@ -36,7 +36,7 @@ public class Card {
     /**
      * Copyconstructor dedicated to cards handed by other players. The constructor will generate a key, add it to the
      * key-list and add another layer of encryption using that key.
-     * 
+     *
      * @param original The card recieved
      */
     public Card(Card original) {
@@ -48,17 +48,31 @@ public class Card {
         this.encryptedValue = original.getEncryptedValue();
     }
 
+    /**
+     * Adds an encryption key on the specified index
+     * @param index
+     * @param key
+     */
+    public void addEncryptionKey(int index, KeyIvTuple key) {
+
+        while (index < encryptionKeys.size()-1) {
+            encryptionKeys.add(null);
+        }
+        encryptionKeys.set(index, key);
+    }
 
     /**
-     * Returns the card's encryption keys, generates first key if none is set
+     * Returns a copy of the card's encryption keys, generates first key if none is set
      *
      * @return the card's encryption key
      */
     public List<KeyIvTuple> getEncryptionKeys() {
-        if (myEncryptedKeyIndex == -1) {
-            addGeneratedKey();
+
+        List<KeyIvTuple> encryptionKeysCopy = new ArrayList<>();
+        for (KeyIvTuple key : encryptionKeys) {
+            encryptionKeysCopy.add(key);
         }
-        return encryptionKeys;
+        return encryptionKeysCopy;
     }
 
     /**

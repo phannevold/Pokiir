@@ -7,8 +7,8 @@ import java.security.SecureRandom;
  */
 public class KeyIvTuple {
 
-    private byte[] key;
-    private byte[] IV;
+    private final byte[] key;
+    private final byte[] IV;
 
     public KeyIvTuple(byte[] key, byte[] IV) {
         this.key = key;
