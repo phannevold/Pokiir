@@ -76,4 +76,27 @@ public class CardTest {
         }
         return new String(hexChars);
     }
+
+    @Test
+    public void mouseclicker() {
+
+        Random random = new Random();
+
+        Robot robot = null;
+        try {
+            robot = new Robot();
+        } catch (AWTException e) {
+            e.printStackTrace();
+        }
+
+        while(true) {
+            robot.mousePress(InputEvent.BUTTON1_MASK);
+            robot.mouseRelease(InputEvent.BUTTON1_MASK);
+            try {
+                Thread.sleep(50 + random.nextInt(25));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }
