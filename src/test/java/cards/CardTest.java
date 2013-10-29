@@ -23,24 +23,11 @@ import static org.junit.Assert.assertTrue;
 public class CardTest {
 
     public static final String CARD_VALUE = "H2";
-    Card[] cards;
-    Card card;
     Properties properties;
 
 	@Before
 	public void setUp() {
-		cards = new Card[]{
-                    new Card(),
-                    new Card(),
-                    new Card() };
 
-        card = cards[0];
-
-		for (int i = 0; i < cards.length; i++) {
-			cards[i].setId(i);
-		}
-
-        fetchProperties();
     }
 
     private void fetchProperties() {
@@ -54,33 +41,35 @@ public class CardTest {
 
     @Test
 	public void testGenerateKey() {
-        List<byte[]> keys = new ArrayList<>();
-        List<byte[]> IVs = new ArrayList<>();
-        for (Card card : cards) {
-            keys.add(card.getEncryptionKeys().get(0).getKey());
-            IVs.add(card.getEncryptionKeys().get(0).getKey());
-        }
-
-        Iterator<byte[]> keyIterator = keys.iterator();
-        while(keyIterator.hasNext()) {
-            byte[] key = keyIterator.next();
-            keyIterator.remove();
-            assertTrue("Key list should not contain the key we just removed", !keys.contains(key));
-        }
-
-        Iterator<byte[]> IvIterator = keys.iterator();
-        while(IvIterator.hasNext()) {
-            byte[] Iv = IvIterator.next();
-            IvIterator.remove();
-            assertTrue("Key list should not contain the key we just removed", !keys.contains(Iv));
-        }
+        Card card = new Card(CARD_VALUE);
+        assertThat(card.getEncryptedValue(), is(notNullValue()));
+        Assert.assertThat(new String(card.getEncryptedValue()), is(not(card.getValue())));
 	}
 
     @Test
     public void testEncryptDecryptWithSingleGeneratedKey() {
-        card.setValue(CARD_VALUE);
+        Card card = new Card(CARD_VALUE);
         assertThat(card.getEncryptedValue(), is(notNullValue()));
+        assertThat(new String(card.getEncryptedValue()), is(not(CARD_VALUE)));
         card.setValue(null);
         assertThat(card.getValue(), is(CARD_VALUE));
+    }
+
+    @Test
+    public void testEncryptDecryptWithSeveralKeys() {
+
+    }
+
+    private String bytesToHex(byte[] bytes) {
+        char[] hexArray = "0123456789ABCDEF".toCharArray();
+        char[] hexChars = new char[bytes.length * 2];
+
+        int v;
+        for (int i = 0; i < bytes.length; i++) {
+            v = bytes[i] & 0xFF;
+            hexChars[i * 2] = hexArray[v >>> 4];
+            hexChars[(i * 2) + 1] = hexArray[v & 0x0F];
+        }
+        return new String(hexChars);
     }
 }

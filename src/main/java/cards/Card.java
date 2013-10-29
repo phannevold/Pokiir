@@ -4,14 +4,13 @@ import encryption.CryptoUtils;
 import encryption.KeyIvTuple;
 
 import java.io.IOException;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
 public class Card {
 
-    private int id;
+    private int id = -1;
 
     private String value;
 
@@ -19,35 +18,52 @@ public class Card {
 
     private byte[] encryptedValue;
 
-    public Card() {
+    private int myEncryptedKeyIndex = -1;
+
+    private Properties properties;
+
+    /**
+     * Constructor for generating "fresh" cards, will only be used in cases that the player is the dealer.
+     *
+     * @param value the card's value in plaintext.
+     */
+    public Card(String value) {
+        this.value =  value;
         encryptionKeys = new ArrayList<>();
-        encryptionKeys.add(null);
+        encrypt();
     }
 
     /**
-     * Returns the cards' encryption keys, generates first key if none is set
+     * Copyconstructor dedicated to cards handed by other players. The constructor will generate a key, add it to the
+     * key-list and add another layer of encryption using that key.
+     * 
+     * @param original The card recieved
+     */
+    public Card(Card original) {
+
+        validateOriginal(original);
+
+        this.id = original.id;
+        this.encryptionKeys = original.getEncryptionKeys();
+        this.encryptedValue = original.getEncryptedValue();
+    }
+
+
+    /**
+     * Returns the card's encryption keys, generates first key if none is set
      *
-     * @return the cards' encryption key
+     * @return the card's encryption key
      */
     public List<KeyIvTuple> getEncryptionKeys() {
-        if (encryptionKeys.get(0) == null) {
-            encryptionKeys.set(0, new KeyIvTuple());
+        if (myEncryptedKeyIndex == -1) {
+            addGeneratedKey();
         }
         return encryptionKeys;
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
     /**
-     * Returns the value if it's set, attempts to decrypt the encrypted value if it's not set
      *
-     * @return
+     * @returnthe value if it's set, attempts to decrypt the encrypted value if it's not set
      */
     public String getValue() {
 
@@ -55,15 +71,23 @@ public class Card {
 
             value = CryptoUtils.decryptString(encryptedValue, encryptionKeys);
 
-            Properties cardValues = new Properties();
-            try {
-                cardValues.load(this.getClass().getResourceAsStream("/cards.properties"));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            Properties cardValues = fetchProperties();
             value = cardValues.getProperty(value) != null ? value : null;
         }
         return value;
+    }
+
+
+    /**
+     * Generates a version of the card that safely can be distributed by removing
+     * the card's value and the encryption key we used to encrypt this card.
+     *
+     * @return a version of this card that's safe to distribute
+     */
+    public Card generateDistributableCard() {
+        Card card =  new Card(this);
+        card.getEncryptionKeys().set(myEncryptedKeyIndex, null);
+        return card;
     }
 
     public void setValue(String value) {
@@ -74,15 +98,58 @@ public class Card {
         this.encryptedValue = encryptedValue;
     }
 
-    /**
-     * Returns the encrypted value if it's set, otherwise, encrypts the value
-     *
-     * @return the encrypted cardvalue
-     */
     public byte[] getEncryptedValue() {
-        if (encryptedValue == null) {
-            encryptedValue = CryptoUtils.encryptString(value, getEncryptionKeys());
-        }
         return encryptedValue;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    private void encrypt() {
+        if (myEncryptedKeyIndex == -1) {
+            addGeneratedKey();
+        }
+        if (encryptedValue == null) {
+            encryptedValue = CryptoUtils.encryptString(value.getBytes(), getEncryptionKeys().get(myEncryptedKeyIndex));
+        } else {
+            encryptedValue = CryptoUtils.encryptString(encryptedValue, getEncryptionKeys().get(myEncryptedKeyIndex));
+        }
+    }
+
+    private void addGeneratedKey() {
+        if (myEncryptedKeyIndex == -1) {
+            encryptionKeys.add(new KeyIvTuple());
+            myEncryptedKeyIndex = encryptionKeys.size() - 1;
+        }
+    }
+
+    private void validateOriginal(Card card) {
+        if (card.encryptedValue == null
+                || id == -1
+                || id > fetchProperties().size()) {
+            throw new IllegalArgumentException("Input card is not valid:");
+        }
+    }
+
+    private Properties fetchProperties() {
+
+        Properties cardValues;
+
+        if (this.properties == null) {
+             cardValues = new Properties();
+            try {
+                cardValues.load(this.getClass().getResourceAsStream("/cards.properties"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            cardValues = this.properties;
+        }
+        return cardValues;
     }
 }

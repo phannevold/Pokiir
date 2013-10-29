@@ -18,14 +18,10 @@ import java.util.ListIterator;
  */
 public class CryptoUtils {
 
-	public static byte[] encryptString (String plaintext, List<KeyIvTuple> keys) {
+	public static byte[] encryptString (byte[] plaintext, KeyIvTuple key) {
 
-        byte[] byteText = plaintext.getBytes();
-
-        for (KeyIvTuple key : keys) {
-            byteText = operateCipher(byteText, key, Cipher.ENCRYPT_MODE);
-        }
-        return byteText;
+            plaintext = operateCipher(plaintext, key, Cipher.ENCRYPT_MODE);
+        return plaintext;
     }
 
 	public static String decryptString (byte[] ciphertext, List<KeyIvTuple> keys) {

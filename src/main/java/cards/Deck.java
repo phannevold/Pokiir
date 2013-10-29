@@ -27,8 +27,7 @@ public class Deck {
 
 		int i = 0;
 		for (Object o : deck.cardProperties.keySet()) {
-			Card card = new Card();
-			card.setValue(o.toString());
+			Card card = new Card(o.toString());
 			deck.cards[i] = card;
 			i++;
 		}
