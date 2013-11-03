@@ -4,10 +4,7 @@ import cards.Deck;
 public class Main {
 
 	public static void main(String[] args) {
-		for (Card card : Deck.createDeck().getCards()) {
-			System.out.println(card.getId() + "\t" + card.getValue() + "\t" + card.getEncryptedValue());
 
-		}
 	}
 
 	private static void writeCardProperties() {

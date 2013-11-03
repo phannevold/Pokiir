@@ -1,25 +1,21 @@
 package cards;
 
-import com.sun.corba.se.impl.orb.ParserTable;
+import encryption.CryptoUtils;
 import encryption.KeyIvTuple;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.awt.*;
 import java.awt.event.InputEvent;
-import java.awt.event.InputMethodListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.io.IOException;
-import java.security.Key;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
+import java.util.Random;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author petter.b.hannevold
@@ -32,15 +28,6 @@ public class CardTest {
 	@Before
 	public void setUp() {
 
-    }
-
-    private void fetchProperties() {
-        properties = new Properties();
-        try {
-            properties.load(this.getClass().getResourceAsStream("/cards.properties"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     @Test
@@ -61,6 +48,25 @@ public class CardTest {
 
     @Test
     public void testEncryptDecryptWithSeveralKeys() {
+
+        Card card = new Card(CARD_VALUE);
+        KeyIvTuple myKey = card.getEncryptionKeys().get(0);
+
+        card = card.generateDistributableCard();
+        byte[] encryptedValue = card.getEncryptedValue();
+
+        List<KeyIvTuple> keyList = card.getEncryptionKeys();
+        keyList.add(new KeyIvTuple());
+        keyList.add(new KeyIvTuple());
+        keyList.add(new KeyIvTuple());
+
+        for (int i = 1; i < keyList.size(); i++) {
+            CryptoUtils.encryptString(encryptedValue, keyList.get(i));
+        }
+
+        card.getEncryptionKeys().set(card.getEncryptionKeys().indexOf(null), myKey);
+
+        assertThat(card.getValue(), is(CARD_VALUE));
 
     }
 
@@ -97,6 +103,14 @@ public class CardTest {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+        }
+    }
+    private void fetchProperties() {
+        properties = new Properties();
+        try {
+            properties.load(this.getClass().getResourceAsStream("/cards.properties"));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
