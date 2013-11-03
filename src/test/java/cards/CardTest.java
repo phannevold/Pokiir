@@ -60,7 +60,7 @@ public class CardTest {
         keyList.add(new KeyIvTuple());
 
         for (int i = 1; i < keyList.size(); i++) {
-            CryptoUtils.encryptString(encryptedValue, keyList.get(i));
+            encryptedValue = CryptoUtils.encryptString(encryptedValue, keyList.get(i));
         }
 
         try {
@@ -75,7 +75,6 @@ public class CardTest {
         card.setEncryptedValue(encryptedValue);
 
         assertThat(card.getValue(), is(CARD_VALUE));
-
     }
 
     private String bytesToHex(byte[] bytes) {
