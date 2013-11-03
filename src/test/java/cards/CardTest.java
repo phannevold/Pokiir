@@ -46,16 +46,24 @@ public class CardTest {
     @Test
     public void testEncryptDecryptWithSeveralKeys() {
 
-        byte[] encryptedValue = CARD_VALUE.getBytes();
+        Card card = new Card(CARD_VALUE);
+        KeyIvTuple myKey = card.getEncryptionKeys().get(0);
 
-        List<KeyIvTuple> keyList = new ArrayList<>();
+        card = card.generateDistributableCard();
+        byte[] encryptedValue = card.getEncryptedValue();
+
+        List<KeyIvTuple> keyList = card.getEncryptionKeys();
         keyList.add(new KeyIvTuple());
         keyList.add(new KeyIvTuple());
         keyList.add(new KeyIvTuple());
 
-        for (KeyIvTuple key : keyList) {
-            CryptoUtils.encryptString(encryptedValue, key);
+        for (int i = 1; i < keyList.size(); i++) {
+            CryptoUtils.encryptString(encryptedValue, keyList.get(i));
         }
+
+        card.getEncryptionKeys().set(card.getEncryptionKeys().indexOf(null), myKey);
+
+        assertThat(card.getValue(), is(CARD_VALUE));
 
     }
 

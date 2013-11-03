@@ -21,6 +21,10 @@ public class Card {
 
     private Map<UUID, Integer> ids;
 
+    private Card() {
+
+    }
+
     /**
      * Constructor for generating "fresh" cards, will only be used in cases that the player is the dealer.
      *
@@ -101,9 +105,24 @@ public class Card {
      * @return a version of this card that's safe to distribute
      */
     public Card generateDistributableCard() {
-        Card card =  new Card(this);
-        card.getEncryptionKeys().set(myEncryptedKeyIndex, null);
+        Card card =  new Card();
+        card.setEncryptedValue(this.encryptedValue);
+        card.ids = this.ids;
+        card.encryptionKeys = makeSafeEncryptionKeyList();
+
         return card;
+    }
+
+    private List<KeyIvTuple> makeSafeEncryptionKeyList() {
+        List<KeyIvTuple> safeEncryptionKeys = new ArrayList<>();
+        for (int i = 0; i < encryptionKeys.size(); i++) {
+            if (i == myEncryptedKeyIndex) {
+                safeEncryptionKeys.add(null);
+            } else {
+                safeEncryptionKeys.add(encryptionKeys.get(i));
+            }
+        }
+        return safeEncryptionKeys;
     }
 
     public void setValue(String value) {
