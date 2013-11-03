@@ -7,6 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -52,7 +53,8 @@ public class CardTest {
         card = card.generateDistributableCard();
         byte[] encryptedValue = card.getEncryptedValue();
 
-        List<KeyIvTuple> keyList = card.getEncryptionKeys();
+        List<KeyIvTuple> keyList = new ArrayList<>();
+        keyList.add(myKey);
         keyList.add(new KeyIvTuple());
         keyList.add(new KeyIvTuple());
         keyList.add(new KeyIvTuple());
@@ -61,7 +63,16 @@ public class CardTest {
             CryptoUtils.encryptString(encryptedValue, keyList.get(i));
         }
 
-        card.getEncryptionKeys().set(card.getEncryptionKeys().indexOf(null), myKey);
+        try {
+            Field field = card.getClass().getDeclaredField("encryptionKeys");
+            field.setAccessible(true);
+            field.set(card, keyList);
+        } catch (NoSuchFieldException
+                | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
+        card.setEncryptedValue(encryptedValue);
 
         assertThat(card.getValue(), is(CARD_VALUE));
 
