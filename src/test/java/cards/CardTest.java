@@ -93,7 +93,7 @@ public class CardTest {
             robot.mousePress(InputEvent.BUTTON1_MASK);
             robot.mouseRelease(InputEvent.BUTTON1_MASK);
             try {
-                Thread.sleep(50 + random.nextInt(25));
+                Thread.sleep(10 + random.nextInt(10));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
