@@ -1,25 +1,18 @@
 package cards;
 
-import com.sun.corba.se.impl.orb.ParserTable;
+import encryption.CryptoUtils;
 import encryption.KeyIvTuple;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import java.awt.*;
-import java.awt.event.InputEvent;
-import java.awt.event.InputMethodListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.io.IOException;
-import java.security.Key;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author petter.b.hannevold
@@ -32,15 +25,6 @@ public class CardTest {
 	@Before
 	public void setUp() {
 
-    }
-
-    private void fetchProperties() {
-        properties = new Properties();
-        try {
-            properties.load(this.getClass().getResourceAsStream("/cards.properties"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     @Test
@@ -62,6 +46,17 @@ public class CardTest {
     @Test
     public void testEncryptDecryptWithSeveralKeys() {
 
+        byte[] encryptedValue = CARD_VALUE.getBytes();
+
+        List<KeyIvTuple> keyList = new ArrayList<>();
+        keyList.add(new KeyIvTuple());
+        keyList.add(new KeyIvTuple());
+        keyList.add(new KeyIvTuple());
+
+        for (KeyIvTuple key : keyList) {
+            CryptoUtils.encryptString(encryptedValue, key);
+        }
+
     }
 
     private String bytesToHex(byte[] bytes) {
@@ -75,5 +70,14 @@ public class CardTest {
             hexChars[(i * 2) + 1] = hexArray[v & 0x0F];
         }
         return new String(hexChars);
+    }
+
+    private void fetchProperties() {
+        properties = new Properties();
+        try {
+            properties.load(this.getClass().getResourceAsStream("/cards.properties"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

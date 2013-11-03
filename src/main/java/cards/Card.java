@@ -2,15 +2,12 @@ package cards;
 
 import encryption.CryptoUtils;
 import encryption.KeyIvTuple;
+import game.Game;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 public class Card {
-
-    private int id = -1;
 
     private String value;
 
@@ -21,6 +18,8 @@ public class Card {
     private int myEncryptedKeyIndex = -1;
 
     private Properties properties;
+
+    private Map<UUID, Integer> ids;
 
     /**
      * Constructor for generating "fresh" cards, will only be used in cases that the player is the dealer.
@@ -43,15 +42,18 @@ public class Card {
 
         validateOriginal(original);
 
-        this.id = original.id;
+        this.ids = original.ids;
         this.encryptionKeys = original.getEncryptionKeys();
         this.encryptedValue = original.getEncryptedValue();
+
+        // Adds my own layer of encryption
+        encryptionKeys.add(new KeyIvTuple());
+        this.myEncryptedKeyIndex = encryptionKeys.size() - 1;
+        this.encryptedValue = CryptoUtils.encryptString(encryptedValue, encryptionKeys.get(myEncryptedKeyIndex));
     }
 
     /**
      * Adds an encryption key on the specified index
-     * @param index
-     * @param key
      */
     public void addEncryptionKey(int index, KeyIvTuple key) {
 
@@ -77,7 +79,7 @@ public class Card {
 
     /**
      *
-     * @returnthe value if it's set, attempts to decrypt the encrypted value if it's not set
+     * @return the value if it's set, attempts to decrypt the encrypted value if it's not set
      */
     public String getValue() {
 
@@ -116,12 +118,15 @@ public class Card {
         return encryptedValue;
     }
 
-    public int getId() {
-        return id;
+    public Map<UUID, Integer> getIds() {
+        return ids;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setId(Integer id) {
+        if (ids.containsKey(Game.me.getId())) {
+            throw new IllegalStateException("You've tried to add an ID to a card when you've already ID'ed it before");
+        }
+        ids.put(Game.me.getId(), id);
     }
 
     private void encrypt() {
@@ -143,9 +148,7 @@ public class Card {
     }
 
     private void validateOriginal(Card card) {
-        if (card.encryptedValue == null
-                || id == -1
-                || id > fetchProperties().size()) {
+        if (card.encryptedValue == null) {
             throw new IllegalArgumentException("Input card is not valid:");
         }
     }
