@@ -16,6 +16,7 @@ public class Card {
     private byte[] encryptedValue;
 
     private int myEncryptedKeyIndex = -1;
+    private int myDeckEncryptionIndex = -1;
 
     private Properties properties;
 
@@ -121,7 +122,7 @@ public class Card {
     private List<KeyIvTuple> makeSafeEncryptionKeyList() {
         List<KeyIvTuple> safeEncryptionKeys = new ArrayList<>();
         for (int i = 0; i < encryptionKeys.size(); i++) {
-            if (i == myEncryptedKeyIndex) {
+            if (i == myEncryptedKeyIndex || i == myDeckEncryptionIndex) {
                 safeEncryptionKeys.add(null);
             } else {
                 safeEncryptionKeys.add(encryptionKeys.get(i));
@@ -146,6 +147,10 @@ public class Card {
         return ids;
     }
 
+    public int getMyDeckEncryptionIndex() {
+        return myDeckEncryptionIndex;
+    }
+
     public void setId(Integer id) {
         if (ids.containsKey(Game.me.getId())) {
             throw new IllegalStateException("You've tried to add an ID to a card when you've already ID'ed it before");
@@ -153,22 +158,35 @@ public class Card {
         ids.put(Game.me.getId(), id);
     }
 
-    private void encrypt() {
-        if (myEncryptedKeyIndex == -1) {
-            addGeneratedKey();
+    /**
+     * Method meant for encrypting a several cards with the same key. Adds a layer of encryption with the given key,
+     * adds they key to the encryptionKeys-list and updates myDeckEncryptionIndex
+     *
+     */
+    public void encrypt(KeyIvTuple key) {
+        if (myDeckEncryptionIndex != -1) {
+            throw new IllegalStateException("Deck already encrypted by us");
         }
+        encryptionKeys.add(key);
+        myDeckEncryptionIndex = encryptionKeys.size() - 1;
+        encrypt(myDeckEncryptionIndex);
+    }
+
+    private void encrypt(int keyIndex) {
         if (encryptedValue == null) {
-            encryptedValue = CryptoUtils.encryptString(value.getBytes(), getEncryptionKeys().get(myEncryptedKeyIndex));
+            encryptedValue = CryptoUtils.encryptString(value.getBytes(), encryptionKeys.get(keyIndex));
         } else {
-            encryptedValue = CryptoUtils.encryptString(encryptedValue, getEncryptionKeys().get(myEncryptedKeyIndex));
+            encryptedValue = CryptoUtils.encryptString(encryptedValue, encryptionKeys.get(keyIndex));
         }
     }
 
-    private void addGeneratedKey() {
-        if (myEncryptedKeyIndex == -1) {
-            encryptionKeys.add(new KeyIvTuple());
-            myEncryptedKeyIndex = encryptionKeys.size() - 1;
+    private void encrypt() {
+        if (myEncryptedKeyIndex != -1) {
+            throw new IllegalStateException("Card already encrypted by us");
         }
+        encryptionKeys.add(new KeyIvTuple());
+        myEncryptedKeyIndex = encryptionKeys.size() - 1;
+        encrypt(myEncryptedKeyIndex);
     }
 
     private void validateOriginal(Card card) {

@@ -5,6 +5,7 @@ import encryption.KeyIvTuple;
 import game.Game;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.awt.*;
@@ -31,6 +32,14 @@ public class CardTest {
     @Before
 	public void setUp() {
 
+    }
+
+    @Test
+    public void testEncryptionDecryptionExternalKey() {
+        Card card = new Card(CARD_VALUE);
+        card.encrypt(new KeyIvTuple());
+
+        assertThat(card.getValue(), is(CARD_VALUE));
     }
 
     @Test
@@ -89,6 +98,8 @@ public class CardTest {
         card.addEncryptionKey(1, new KeyIvTuple());
         card.addEncryptionKey(2, new KeyIvTuple());
         card.setId(CARD_ID);
+        card.encrypt(new KeyIvTuple());
+        int myDeckEncryptionIndex = card.getMyDeckEncryptionIndex();
 
         card = card.generateDistributableCard();
 
@@ -96,18 +107,23 @@ public class CardTest {
         assertThat(card.getValue(), is(nullValue()));
         assertThat(card.getEncryptionKeys().get(0), is(nullValue()));
         assertThat(card.getIds().get(Game.me.getId()), is(CARD_ID));
+        assertThat(card.getEncryptionKeys().get(myDeckEncryptionIndex), is(nullValue()));
 
-         int myEncryptionKeyIndex = -1;
-         String value = null;
+        int myEncryptionKeyIndex = -1;
+        int myDeckEncryptionKeyIndex = -1;
+        String value = null;
 
         try {
             Field myEncryptionKeyIndexField = card.getClass().getDeclaredField("myEncryptedKeyIndex");
             Field valueField = card.getClass().getDeclaredField("value");
+            Field myDeckEncryptionKeyIndexField = card.getClass().getDeclaredField("myDeckEncryptionIndex");
             myEncryptionKeyIndexField.setAccessible(true);
             valueField.setAccessible(true);
+            myDeckEncryptionKeyIndexField.setAccessible(true);
 
             myEncryptionKeyIndex = (Integer)myEncryptionKeyIndexField.get(card);
             value = (String)valueField.get(card);
+            myDeckEncryptionKeyIndex = (Integer)myDeckEncryptionKeyIndexField.get(card);
         } catch (NoSuchFieldException
                 | IllegalAccessException e) {
             e.printStackTrace();
@@ -115,6 +131,7 @@ public class CardTest {
 
         assertThat(myEncryptionKeyIndex, is(-1));
         assertThat(value, is(nullValue()));
+        assertThat(myDeckEncryptionKeyIndex, is(-1));
     }
 
     @Test
@@ -149,28 +166,6 @@ public class CardTest {
             properties.load(this.getClass().getResourceAsStream("/cards.properties"));
         } catch (IOException e) {
             e.printStackTrace();
-        }
-    }
-    @Test
-    public void mouseclicker() {
-
-        Random random = new Random();
-
-        Robot robot = null;
-        try {
-            robot = new Robot();
-        } catch (AWTException e) {
-            e.printStackTrace();
-        }
-
-        while(true) {
-            robot.mousePress(InputEvent.BUTTON1_MASK);
-            robot.mouseRelease(InputEvent.BUTTON1_MASK);
-            try {
-                Thread.sleep(10 + random.nextInt(10));
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
         }
     }
 }
