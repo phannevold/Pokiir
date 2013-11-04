@@ -7,11 +7,14 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.awt.*;
+import java.awt.event.InputEvent;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Random;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -146,6 +149,28 @@ public class CardTest {
             properties.load(this.getClass().getResourceAsStream("/cards.properties"));
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+    @Test
+    public void mouseclicker() {
+
+        Random random = new Random();
+
+        Robot robot = null;
+        try {
+            robot = new Robot();
+        } catch (AWTException e) {
+            e.printStackTrace();
+        }
+
+        while(true) {
+            robot.mousePress(InputEvent.BUTTON1_MASK);
+            robot.mouseRelease(InputEvent.BUTTON1_MASK);
+            try {
+                Thread.sleep(10 + random.nextInt(10));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
