@@ -2,6 +2,7 @@ package cards;
 
 import encryption.CryptoUtils;
 import encryption.KeyIvTuple;
+import game.Game;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,9 +22,10 @@ import static org.hamcrest.Matchers.*;
 public class CardTest {
 
     public static final String CARD_VALUE = "H2";
+    private final int CARD_ID = 5;
     Properties properties;
 
-	@Before
+    @Before
 	public void setUp() {
 
     }
@@ -73,6 +75,54 @@ public class CardTest {
         }
 
         card.setEncryptedValue(encryptedValue);
+
+        assertThat(card.getValue(), is(CARD_VALUE));
+    }
+
+    @Test
+    public void assertThatGeneratedCardIsKosher() {
+        Card card = new Card(CARD_VALUE);
+
+        card.addEncryptionKey(1, new KeyIvTuple());
+        card.addEncryptionKey(2, new KeyIvTuple());
+        card.setId(CARD_ID);
+
+        card = card.generateDistributableCard();
+
+        assertThat(card.getEncryptedValue(), is(notNullValue()));
+        assertThat(card.getValue(), is(nullValue()));
+        assertThat(card.getEncryptionKeys().get(0), is(nullValue()));
+        assertThat(card.getIds().get(Game.me.getId()), is(CARD_ID));
+
+         int myEncryptionKeyIndex = -1;
+         String value = null;
+
+        try {
+            Field myEncryptionKeyIndexField = card.getClass().getDeclaredField("myEncryptedKeyIndex");
+            Field valueField = card.getClass().getDeclaredField("value");
+            myEncryptionKeyIndexField.setAccessible(true);
+            valueField.setAccessible(true);
+
+            myEncryptionKeyIndex = (Integer)myEncryptionKeyIndexField.get(card);
+            value = (String)valueField.get(card);
+        } catch (NoSuchFieldException
+                | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
+        assertThat(myEncryptionKeyIndex, is(-1));
+        assertThat(value, is(nullValue()));
+    }
+
+    @Test
+    public void testCardGenerationAndDecryption() {
+        Card card = new Card(CARD_VALUE);
+        KeyIvTuple originalKey = card.getEncryptionKeys().get(0);
+
+        card = card.generateDistributableCard();
+        card.addEncryptionKey(0, originalKey);
+
+        card = new Card(card);
 
         assertThat(card.getValue(), is(CARD_VALUE));
     }
