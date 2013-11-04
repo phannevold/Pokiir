@@ -33,6 +33,7 @@ public class Card {
     public Card(String value) {
         this.value =  value;
         encryptionKeys = new ArrayList<>();
+        ids = new HashMap<>();
         encrypt();
     }
 
@@ -57,11 +58,13 @@ public class Card {
     }
 
     /**
-     * Adds an encryption key on the specified index
+     * Adds an encryption key on the specified index.
+     * No encryption is done here, this method are designed to add keys from players who already encrypted
+     * this card with their key.
      */
     public void addEncryptionKey(int index, KeyIvTuple key) {
 
-        while (index < encryptionKeys.size()-1) {
+        while (index > encryptionKeys.size() - 1) {
             encryptionKeys.add(null);
         }
         encryptionKeys.set(index, key);
@@ -82,12 +85,14 @@ public class Card {
     }
 
     /**
+     * Decrypts the card if it's not already set.
+     * Does not attempt to decrypt if any of the keys are null
      *
-     * @return the value if it's set, attempts to decrypt the encrypted value if it's not set
+     * @return the value if it's set, attempts to decrypt the encrypted value if it's not set.
      */
     public String getValue() {
 
-        if (value == null) {
+        if (value == null && !encryptionKeys.contains(null)) {
 
             value = CryptoUtils.decryptString(encryptedValue, encryptionKeys);
 
