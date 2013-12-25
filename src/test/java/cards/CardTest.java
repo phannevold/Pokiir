@@ -17,7 +17,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 /**
- * @author petter.b.hannevold
+ * @author Petter Hannevold
  */
 public class CardTest {
 

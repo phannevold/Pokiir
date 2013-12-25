@@ -3,7 +3,7 @@ package encryption;
 import java.security.SecureRandom;
 
 /**
- * @author: Petter
+ * @author: Petter Hannevold
  */
 public class KeyIvTuple {
 

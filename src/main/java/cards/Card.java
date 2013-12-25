@@ -7,6 +7,10 @@ import game.Game;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * @author Petter Hannevold
+ */
+
 public class Card {
 
     private String value;
@@ -55,6 +59,7 @@ public class Card {
         // Adds my own layer of encryption
         encryptionKeys.add(new KeyIvTuple());
         this.myEncryptedKeyIndex = encryptionKeys.size() - 1;
+
         this.encryptedValue = CryptoUtils.encryptString(encryptedValue, encryptionKeys.get(myEncryptedKeyIndex));
     }
 

@@ -3,7 +3,7 @@ package game;
 import java.util.UUID;
 
 /**
- * @author: Petter
+ * @author: Petter Hannevold
  */
 public class Player {
 

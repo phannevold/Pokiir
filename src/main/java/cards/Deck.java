@@ -6,6 +6,10 @@ import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.Properties;
 
+/**
+ * @author Petter Hannevold
+ */
+
 public class Deck {
 
 	private Card[] cards;

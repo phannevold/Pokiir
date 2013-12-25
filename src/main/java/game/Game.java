@@ -1,7 +1,7 @@
 package game;
 
 /**
- * @author: Petter
+ * @author: Petter Hannevold
  */
 public class Game implements LogicInterface {
 

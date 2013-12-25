@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.ListIterator;
 
 /**
- * @author petter.b.hannevold
+ * @author Petter Hannevold
  */
 public class CryptoUtils {
 

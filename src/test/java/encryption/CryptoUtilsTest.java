@@ -9,7 +9,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 /**
- * @author: Petter
+ * @author: Petter Hannevold
  */
 public class CryptoUtilsTest {
 

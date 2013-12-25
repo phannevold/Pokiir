@@ -1,6 +1,10 @@
 import cards.Card;
 import cards.Deck;
 
+/**
+ * @author Petter Hannevold
+ */
+
 public class Main {
 
 	public static void main(String[] args) {

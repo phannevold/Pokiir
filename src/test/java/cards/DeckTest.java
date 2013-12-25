@@ -18,7 +18,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 /**
- * @author: Petter
+ * @author: Petter Hannevold
  */
 public class DeckTest {
 
