@@ -1,16 +1,21 @@
 package network;
 
+import game.Game;
+
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.UUID;
 
 /**
  * @author Petter Hannevold
  */
 public class Peer {
+
+	private UUID uuid;
 
 	private BufferedOutputStream writer;
 	private BufferedReader reader;
@@ -18,7 +23,7 @@ public class Peer {
 	private ArrayList<String> messageLog;
 	private int lastIndexRead;
 
-	private static final String END = "";
+	private static final String END = "%end";
 
 	public Peer(Socket socket) {
 		try {
@@ -27,10 +32,14 @@ public class Peer {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		new Thread(new Reciever()).start();
+
+		uuid = fetchUUID(reader);
+		sendMessage(Game.me.getId().toString());
+
 		messageLog = new ArrayList<>();
 		lastIndexRead = -1;
 
-		new Thread(new Reciever()).start();
 	}
 
 	public String getLastMessage() {
@@ -46,6 +55,32 @@ public class Peer {
 		new Thread(sender).start();
 	}
 
+	public UUID getUuid() {
+		return uuid;
+	}
+
+	public boolean hasRecievedNewMessage() {
+		return lastIndexRead < messageLog.size();
+	}
+
+	private UUID fetchUUID(BufferedReader reader) {
+		UUID uuid = null;
+		try {
+			while (true) {
+				if (reader.ready()) {
+					String uuidString = reader.readLine();
+					uuid = UUID.fromString(uuidString);
+					break;
+				} else {
+					Thread.sleep(100);
+				}
+			}
+		} catch (IOException | InterruptedException e) {
+			e.printStackTrace();
+		}
+		return uuid;
+	}
+
 	private class Sender implements Runnable {
 
 		String message;
@@ -57,6 +92,7 @@ public class Peer {
 		@Override
 		public void run() {
 			try {
+				System.out.println("writing " + message);
 				writer.write(message.getBytes());
 				writer.flush();
 			} catch (IOException e) {
@@ -73,14 +109,19 @@ public class Peer {
 			String line;
 			while(true) {
 				try {
-					line = reader.readLine();
-					if (END.equals(line)) {
-						writeMessage(message.toString());
-						message = new StringBuilder();
+					if (reader.ready()) {
+						line = reader.readLine();
+						System.out.println("read: " + message);
+						if (END.equals(line)) {
+							writeMessage(message.toString());
+							message = new StringBuilder();
+						} else {
+							message.append(line);
+						}
 					} else {
-						message.append(line);
+						Thread.sleep(300);
 					}
-				} catch (IOException e) {
+				} catch (IOException | InterruptedException e) {
 					e.printStackTrace();
 				}
 			}
